@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 
 from feature_format import featureFormat, targetFeatureSplit
 from tester import dump_classifier_and_data
+from sklearn.preprocessing import MinMaxScaler
+
 
 
 
@@ -70,6 +72,10 @@ for ii in my_dataset:
 data = featureFormat(my_dataset, features_list, sort_keys = True)
 labels, features = targetFeatureSplit(data)
 
+#Scaling my features
+scaler = MinMaxScaler()
+features = scaler.fit_transform(features)
+
 #pprint.pprint(labels)
 #pprint.pprint(features)
 #-------------------------------------------------------------------------
@@ -91,13 +97,13 @@ tree2 = DecisionTreeClassifier(random_state=2)
 clf_SVM = SVC(kernel = 'rbf', C = 1000.0)
 
 #Selecting only the best features
-kbest = feature_selection.SelectKBest(k=5)
+#kbest = feature_selection.SelectKBest(k=5)
 
 #-------------------------------------------------------------------------
 #-------------------------------------------------------------------------
 def kbestfeatures(features,labels):
     #Selecting only the best features
-    kbest = feature_selection.SelectKBest(k=9)
+    kbest = feature_selection.SelectKBest(k=7)
     kbest.fit(features,labels)
     #print 'Score using KBest'
     #print kbest.scores_
@@ -242,12 +248,12 @@ for train_idx, test_idx in cv:
         for jj in test_idx:
             features_test.append( features[jj] )
             labels_test.append( labels[jj] )
-        clf_Gaussian.fit(features_train,labels_train)
-        prediction1 = clf_Gaussian.predict(features_test)
-        mean_accuracy += clf_Gaussian.score(features_test,labels_test)
-        mean_recall += metrics.recall_score(labels_test,prediction1)
-        mean_precision += metrics.precision_score(labels_test,prediction1)
-        mean_f1 += metrics.f1_score(labels_test,prediction1)
+        clf_SVM.fit(features_train,labels_train)
+        prediction = clf_SVM.predict(features_test)
+        mean_accuracy += clf_SVM.score(features_test,labels_test)
+        mean_recall += metrics.recall_score(labels_test,prediction)
+        mean_precision += metrics.precision_score(labels_test,prediction)
+        mean_f1 += metrics.f1_score(labels_test,prediction)
 print 'Score after applying StratifiedShuffleSplit:', mean_accuracy/1000
 print 'Recall:', mean_recall/1000
 print 'Precision:', mean_precision/1000
@@ -264,7 +270,7 @@ print '\n'
 dump_classifier_and_data(clf_Gaussian, my_dataset, features_list)
 
 
-#import tester
+import tester
 
 
-#tester.test_classifier(clf_Gaussian,my_dataset,features_list)
+tester.test_classifier(clf_Gaussian,my_dataset,features_list)
